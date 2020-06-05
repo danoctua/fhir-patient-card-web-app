@@ -1,0 +1,4 @@
+{
+  "app_id": "my_web_app",
+  "api_base": "https://stu3.test.pyrohealth.net/fhir"
+}

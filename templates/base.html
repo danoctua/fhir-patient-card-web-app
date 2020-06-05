@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+
+
+<head>
+    <!-- Required meta tags -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}?v={{ media_version }}">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+            integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dis  t/umd/popper.min.js"
+            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600&display=swap&subset=cyrillic,cyrillic-ext">
+{#    <script src="{{ url_for('static', filename='main.js') }}?v={{ media_version }}"></script>#}
+    <title>{% block title %}FHIR{% endblock %}</title>
+    {% block script %}
+
+    {% endblock %}
+</head>
+
+<body>
+{% block login %}
+{% endblock %}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <a href="{{ url_for('main_page') }}"
+       class="nav-home"><img src="{{ url_for('static', filename='home.png') }}" class="nav-home-icon"></a>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="#">link</a    >
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">link</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">link</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+{% block noshow %}
+
+<div class="header">
+    <div class="header-text">
+        {% block header %}
+            FHIR
+        {% endblock %}
+    </div>
+</div>
+{% block opt %}
+
+{% endblock %}
+
+<div class="container">
+    {% if notification %}
+        {% if notification[0]=='success' %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <h4 class="alert-heading">Done!</h4>
+                <p>{{ notification[1]|safe }}</p>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% elif notification[0]=='danger' %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <h4 class="alert-heading">Oops...</h4>
+                <p>{{ notification[1]|safe }}</p>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% elif notification[0]=='warning' %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <h4 class="alert-heading">Warning</h4>
+                <p>{{ notification[1]|safe }}</p>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endif %}
+    {% endif %}
+    {% block content %}
+    {% endblock %}
+</div>
+
+
+<footer class="footer">
+    <center><a>Copyright &copy; DanikTL. All right reserved</a>
+    </center>
+</footer>
+
+<button class="arrow_up" id="scroll_top"></button>
+
+{% endblock %}
+</body>
+</html>
+
+
