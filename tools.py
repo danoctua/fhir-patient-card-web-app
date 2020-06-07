@@ -1,33 +1,21 @@
-import json
-import os
-import fhirclient.models.observation as o
-import fhirclient.models.patient as p
-from fhirclient import client
+from fhirclient.client import FHIRServer
+from fhirclient.models.patient import Patient
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+server = FHIRServer(None, "http://hapi.fhir.org/baseR4")
+p = Patient.read("921009", server)
+print("-" * 40)
+print("Patient Information")
+print("-" * 40)
+print(f"NAME: {p.name[0].text}")
+print(f"BIRTHDATE: {p.birthDate.date.isoformat()}")
+from fhirclient.models.condition import Condition
 
-config_path = os.path.join(dir_path, "data", "config.json")
-
-with open(config_path) as file:
-    settings = json.load(file)
-
-
-def connect_fo_fhir():
-    smart = client.FHIRClient(settings=settings)
-
-    print(f"Connecting to the FHIRServer {settings['api_base']}...")
-    print(smart.ready)
-    print(smart.prepare())
-
-    patient = p.Patient.read('example', smart.server)
-    print(patient.birthDate.isostring)
-    # '1963-06-12'
-    print(smart.human_name(patient.name[0]))
-    print(patient.contact)
-    observations = o.Observation.read(patient.id, smart.server)
-    print(observations)
-    # 'Christy Ebert'
-
-
-if __name__ == '__main__':
-    connect_fo_fhir()
+conditions = Condition.where({ "subject": "921009"} ).perform_resources(server)
+if not conditions:
+    print("PROBLEM LIST: None")
+else:
+    print("PROBLEM LIST:")
+    i = 1
+    for cond in conditions:
+        print(f"{i:>3d}. {cond.code.text:<40s} Severity: {cond.severity.text:<12s}")
+        i += 1
