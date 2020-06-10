@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block header %}
+    List of patients
+{% endblock %}
+
+{% block content %}
+
+    <form action="{{ current_url }}">
+        <div class="form-row">
+            <div class="col">
+                <input type="text" class="form-control" name="given" placeholder="First name">
+            </div>
+            <div class="col">
+                <input type="text" class="form-control" name="family" placeholder="Last name">
+            </div>
+            <div class="col">
+                <button type="submit" class="btn btn-primary mb-2">Filter</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="filters-section">
+        {% if family %}
+            <a class="filter" href="{{ current_url }}&family_=">
+                Last name: {{ family }}
+            </a>
+        {% endif %}
+
+        {% if given %}
+            <a class="filter" href="{{ current_url }}&given_=">
+                First name: {{ given }}
+            </a>
+        {% endif %}
+    </div>
+
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Last name</th>
+            <th>First name</th>
+            <th>Birth date</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for patient in patients %}
+            <tr>
+                <th>
+                    <a href="{{ url_for("patient_page", patient_id=patient.patient_id) }}">{{ patient.get_patient_id_display() }}</a>
+                </th>
+                <th>{{ patient.last_name }}</th>
+                <th>{{ patient.get_first_names_display() }}</th>
+                <th>{{ patient.get_birth_date_display() }}</th>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

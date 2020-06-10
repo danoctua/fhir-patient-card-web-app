@@ -84,3 +84,111 @@ html {
     width: auto;
     filter: invert(70%);
 }
+
+table {
+    background-color: white;
+}
+
+.section-header {
+    font-weight: 600;
+    font-size: 28px;
+    color: #646464;
+    padding: 15px 0;
+}
+
+.btn-back {
+    font-size: 16px;
+}
+
+.filters-section {
+    display: flex;
+    flex-shrink: 1;
+    flex-wrap: wrap;
+    margin: 10px 0;
+}
+
+.filter {
+    display: block;
+    background-color: white;
+    padding: 5px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    user-select: none;
+    text-decoration: none!important;
+    color: #343a40!important;
+    font-weight: 600;
+}
+
+.filter:hover {
+    background-color: #e6f3fa;
+}
+
+.filter::after {
+    content: "\00d7";
+}
+
+.observation {
+    display: flex;
+    background-color: white;
+    min-height: 80px;
+    border-radius: 30px;
+    margin: 20px 0;
+}
+
+.observation-icon {
+    flex: none;
+    width: 80px;
+    height: 80px;
+    padding: 20px;
+    background-image: url("/static/observation.png");
+    background-origin: content-box;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.medicament-icon {
+    flex: none;
+    width: 80px;
+    height: 80px;
+    padding: 20px;
+    background-image: url("/static/medicament.png");
+    background-origin: content-box;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.observation-datetime {
+    min-width: 125px;
+    height: 80px;
+    color: #343a40;
+    padding: 10px;
+}
+
+.observation-time {
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.observation-description {
+    padding: 10px;
+    flex-grow: 1;
+}
+
+.observation-code {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.observation-quantity {
+    min-width: 100px;
+    padding: 10px 30px;
+    text-align: right;
+    align-self: center;
+}
+
+.observation-quantity-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #355f22;
+}
+

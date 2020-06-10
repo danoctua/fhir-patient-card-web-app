@@ -7,20 +7,21 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}?v={{ media_version }}">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-            integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+            integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
             crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dis  t/umd/popper.min.js"
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
             integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
             crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+            integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
             crossorigin="anonymous"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link rel="stylesheet"
           href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600&display=swap&subset=cyrillic,cyrillic-ext">
-{#    <script src="{{ url_for('static', filename='main.js') }}?v={{ media_version }}"></script>#}
+    {#    <script src="{{ url_for('static', filename='main.js') }}?v={{ media_version }}"></script>#}
     <title>{% block title %}FHIR{% endblock %}</title>
     {% block script %}
 
@@ -38,7 +39,7 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item">
-                <a class="nav-link" href="#">link</a    >
+                <a class="nav-link" href="#">link</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#">link</a>
@@ -52,56 +53,56 @@
 
 {% block noshow %}
 
-<div class="header">
-    <div class="header-text">
-        {% block header %}
-            FHIR
+    <div class="header">
+        <div class="header-text">
+            {% block header %}
+                FHIR
+            {% endblock %}
+        </div>
+    </div>
+    {% block opt %}
+
+    {% endblock %}
+
+    <div class="container">
+        {% if notification %}
+            {% if notification[0]=='success' %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <h4 class="alert-heading">Done!</h4>
+                    <p>{{ notification[1]|safe }}</p>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% elif notification[0]=='danger' %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <h4 class="alert-heading">Oops...</h4>
+                    <p>{{ notification[1]|safe }}</p>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% elif notification[0]=='warning' %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <h4 class="alert-heading">Warning</h4>
+                    <p>{{ notification[1]|safe }}</p>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endif %}
+        {% endif %}
+        {% block content %}
         {% endblock %}
     </div>
-</div>
-{% block opt %}
-
-{% endblock %}
-
-<div class="container">
-    {% if notification %}
-        {% if notification[0]=='success' %}
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <h4 class="alert-heading">Done!</h4>
-                <p>{{ notification[1]|safe }}</p>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        {% elif notification[0]=='danger' %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <h4 class="alert-heading">Oops...</h4>
-                <p>{{ notification[1]|safe }}</p>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        {% elif notification[0]=='warning' %}
-            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                <h4 class="alert-heading">Warning</h4>
-                <p>{{ notification[1]|safe }}</p>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        {% endif %}
-    {% endif %}
-    {% block content %}
-    {% endblock %}
-</div>
 
 
-<footer class="footer">
-    <center><a>Copyright &copy; DanikTL. All right reserved</a>
-    </center>
-</footer>
+    <footer class="footer">
+        <center><a>Copyright &copy; DanikTL. All right reserved</a>
+        </center>
+    </footer>
 
-<button class="arrow_up" id="scroll_top"></button>
+    <button class="arrow_up" id="scroll_top"></button>
 
 {% endblock %}
 </body>
