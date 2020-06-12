@@ -44,7 +44,27 @@
         </tbody>
     </table>
 
+
     <div class="section-header">Events:</div>
+
+    {% if events %}
+
+    <form action="{{ current_url }}">
+
+        <div class="form-row">
+            <div class="col">
+                <label for="date-from">From</label>
+                <input type="date" id="date-from" class="form-control" name="from" value="{{ lower_date }}">
+            </div>
+            <div class="col">
+                <label for="date-to">To</label>
+                <input type="date" id="date-to" class="form-control" name="to" value="{{ upper_date }}">
+            </div>
+            <div class="col">
+                <button type="submit" class="btn btn-primary mb-2">Filter</button>
+            </div>
+        </div>
+    </form>
 
     {% for event in events %}
         <div class="observation">
@@ -60,18 +80,14 @@
                 </div>
                 <div class="observation-quantity">
                     <div class="observation-quantity-value">
-                        {% if event.value_sampled_data_flag %}
-                            <a type="button" data-toggle="modal"
-                               data-target="#modal-{{ event.observation_id }}">
-                                Show
-                            </a>
-                        {% else %}
-                            {{ event.get_quantity_value_display() }}
-                        {% endif %}
+                        {{ event.get_quantity_value_display() }}
                     </div>
                     <div class="observation-quantity-unit">
                         {{ event.get_quantity_unit_display() }}
                     </div>
+                </div>
+                <div class="observation-more">
+                    <a href="{{ url_for("observation_page", observation_id=event.observation_id) }}">More</a>
                 </div>
             {% elif event.resource == "medication_statements" %}
                 <div class="medicament-icon"></div>
@@ -84,7 +100,7 @@
                     <div class="observation-category">{{ event.get_category_display() }}</div>
                 </div>
                 <div class="observation-quantity">
-                    <div class="observation-quantity-value">
+                    <div class="observation-quantity-value {{ "observatio-quantity-value-digit" if event.get_quantity_value_display().isnumeric() else "" }}">
                         {{ event.get_quantity_value_display()|safe }}
                     </div>
                     <div class="observation-quantity-unit">
@@ -93,71 +109,11 @@
                 </div>
             {% endif %}
         </div>
-
-        {% if event.value_sampled_data_flag %}
-            <div class="modal fade"
-                 id="modal-{{ event.observation_id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                 aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="staticBackdropLabel">Observation {{ event.observation_id }}</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <canvas id="chart" width="600" height="400"></canvas>
-                            <script>
-                                // bar chart data
-                                var barData = {
-                                    labels: [
-                                        {% for item in labels %}
-                                            "{{ item }}",
-                                        {% endfor %}
-                                    ],
-
-                                    datasets: [{
-                                        fillColor: "rgba(151,187,205,0.2)",
-                                        strokeColor: "rgba(151,187,205,1)",
-                                        pointColor: "rgba(151,187,205,1)",
-                                        data: [
-                                            {% for item in event.value_sampled_data_data %}
-                                                "{{ item }}",
-                                            {% endfor %}
-                                        ]
-                                    }
-                                    ]
-                                }
-
-                                // get bar chart canvas
-                                var mychart = document.getElementById("chart").getContext("2d");
-
-                                steps = 10
-                                max = {{max}}
-
-                                    // draw bar chart
-                                    new Chart(mychart).Bar(barData, {
-                                            scaleOverride: true,
-                                            scaleSteps: steps,
-                                            scaleStepWidth: Math.ceil("{{ event.value_sampled_data_upper_limit }}" / steps),
-                                            scaleStartValue: 0,
-                                            scaleShowVerticalLines: true,
-                                            scaleShowGridLines: true,
-                                            barShowStroke: true,
-                                            scaleShowLabels: true
-                                        }
-                                    );
-
-                            </script>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {% endif %}
     {% endfor %}
+
+    {% else %}
+        <div class="no-data">This patient has no events</div>
+    {% endif %}
+
 
 {% endblock %}

@@ -33,7 +33,7 @@ html {
     font-size: 40px;
 }
 
-@media only screen and (min-width: 991px){
+@media only screen and (min-width: 991px) {
     body {
         padding-top: 55px;
     }
@@ -45,7 +45,7 @@ html {
 
 }
 
-@media only screen and (max-width: 990px){
+@media only screen and (max-width: 990px) {
     body {
         padding-top: 40px;
     }
@@ -114,8 +114,8 @@ table {
     border-radius: 20px;
     cursor: pointer;
     user-select: none;
-    text-decoration: none!important;
-    color: #343a40!important;
+    text-decoration: none !important;
+    color: #343a40 !important;
     font-weight: 600;
 }
 
@@ -184,11 +184,29 @@ table {
     padding: 10px 30px;
     text-align: right;
     align-self: center;
+    word-break: normal;
 }
 
 .observation-quantity-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: #355f22;
+    text-align: left;
+    word-break: break-word;
+}
+
+.observation-quantity-value-digit {
     font-size: 26px;
     font-weight: 700;
-    color: #355f22;
+    text-align: right;
+}
+
+.observation-more {
+    flex: none;
+    width: 60px;
+}
+
+.form-row {
+    margin: 10px 0!important;
 }
 

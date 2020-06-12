@@ -2,9 +2,9 @@
 
 {% block header %}
     {% if back_url %}
-    <a class="btn-back" href="{{ back_url }}">back to the patient</a>
+        <a class="btn-back" href="{{ back_url }}">back to the patient</a>
     {% endif %}
-    {{ observation.get_category_display() }} {{ observation.get_code_display() }}
+    {{ observation.get_category_display() or "Observation" }} {{ observation.observation_id }}
 
 {% endblock %}
 
@@ -16,149 +16,181 @@
         <tbody>
         <tr>
             <th>ID</th>
-            <th>{{ patient.patient_id }}</th>
+            <th>{{ observation.observation_id }}</th>
         </tr>
         <tr>
-            <th>Last name</th>
-            <th>{{ patient.last_name }}</th>
+            <th>Patient ID</th>
+            <th>{{ observation.subject_id }}</th>
         </tr>
         <tr>
-            <th>First name</th>
-            <th>{{ patient.get_first_names_display() }}</th>
+            <th>Status</th>
+            <th>{{ observation.status }}</th>
         </tr>
         <tr>
-            <th>Gender</th>
-            <th>{{ patient.get_gender_display() }}</th>
+            <th>Observation category</th>
+            <th>{{ observation.get_category_display() }}</th>
         </tr>
         <tr>
-            <th>Birth date</th>
-            <th>{{ patient.get_birth_date_display() }}</th>
+            <th>Observation code</th>
+            <th>{{ observation.get_code_display() }}</th>
         </tr>
         <tr>
-            <th>Address</th>
-            <th>{{ patient.get_address_display() }}</th>
+            <th>Observation date</th>
+            <th>{{ observation.get_observation_date_display() }}</th>
         </tr>
         <tr>
-            <th>Contact</th>
-            <th>{{ patient.get_contact_display() }}</th>
+            <th>Observation time</th>
+            <th>{{ observation.get_observation_time_display() }}</th>
         </tr>
+        {% if not observation.value_sampled_data_flag %}
+            <tr>
+                <th>Results</th>
+                <th>{{ observation.get_quantity_value_display() }} {{ observation.get_quantity_unit_display() }}</th>
+            </tr>
+        {% else %}
+            <tr>
+                <th>Sampled data period</th>
+                <th>{{ observation.value_sampled_data_period }}</th>
+            </tr>
+            <tr>
+                <th>Sampled data factor</th>
+                <th>{{ observation.value_sampled_data_factor }}</th>
+            </tr>
+            <tr>
+                <th>Sampled data lower limit</th>
+                <th>{{ observation.value_sampled_data_lower_limit }}</th>
+            </tr>
+            <tr>
+                <th>Sampled data upper limit</th>
+                <th>{{ observation.value_sampled_data_upper_limit }}</th>
+            </tr>
+        {% endif %}
+
         </tbody>
     </table>
 
-    <div class="section-header">Events:</div>
+    {% if observation.value_sampled_data_flag %}
 
-    {% for event in events %}
-        <div class="observation">
-            {% if event.resource == "observation" %}
-                <div class="observation-icon"></div>
-                <div class="observation-datetime">
-                    <div class="observation-time">{{ event.get_observation_time_display() }}</div>
-                    <div class="observation-date">{{ event.get_observation_date_display() }}</div>
+        <div class="section-header">Sampled data:</div>
+        <canvas id="chart" width="1200" height="800"></canvas>
+
+        <script>
+
+            var ctx = document.getElementById("chart").getContext("2d");
+
+            var chart = new Chart(ctx, {
+                type: "line",
+                options: {
+                    legend: {
+                        display: false,
+                    },
+                    tooltips: {
+                        enabled: false
+                    },
+                    elements: {
+                        point: {
+                            radius: 0
+                        }
+                    }
+                },
+                data: {
+                    labels: [{% for item in get_labels(observation.get_value_sampled_data()) %}{{ item }}, {% endfor %}],
+                    datasets: [{
+                        labels: false,
+                        borderColor: "black",
+                        fill: false,
+                        data: [{% for item in observation.get_value_sampled_data() %}{{ item }}, {% endfor %}]
+                    }]
+                }
+            })
+
+        </script>
+
+
+    {% endif %}
+
+    {% if observation_compare %}
+
+        <div class="section-header">Data dynamics in time:</div>
+
+        <form action="{{ current_url }}">
+            <div class="form-row">
+                <div class="col">
+                    <label for="date-from">From</label>
+                    <input type="date" id="date-from" class="form-control" name="from" value="{{ lower_date }}">
                 </div>
-                <div class="observation-description">
-                    <div class="observation-code">{{ event.get_code_display() }} </div>
-                    <div class="observation-category">{{ event.get_category_display() }}</div>
+                <div class="col">
+                    <label for="date-to">To</label>
+                    <input type="date" id="date-to" class="form-control" name="to" value="{{ upper_date }}">
                 </div>
-                <div class="observation-quantity">
-                    <div class="observation-quantity-value">
-                        {% if event.value_sampled_data_flag %}
-                            <a type="button" data-toggle="modal"
-                               data-target="#modal-{{ event.observation_id }}">
-                                Show
-                            </a>
-                        {% else %}
-                            {{ event.get_quantity_value_display() }}
-                        {% endif %}
-                    </div>
-                    <div class="observation-quantity-unit">
-                        {{ event.get_quantity_unit_display() }}
-                    </div>
-                </div>
-            {% elif event.resource == "medication_statements" %}
-                <div class="medicament-icon"></div>
-                <div class="observation-datetime">
-                    <div class="observation-time">{{ event.get_event_time_display() }}</div>
-                    <div class="observation-date">{{ event.get_event_date_display() }}</div>
-                </div>
-                <div class="observation-description">
-                    <div class="observation-code">{{ event.get_code_display() }} </div>
-                    <div class="observation-category">{{ event.get_category_display() }}</div>
-                </div>
-                <div class="observation-quantity">
-                    <div class="observation-quantity-value">
-                        {{ event.get_quantity_value_display()|safe }}
-                    </div>
-                    <div class="observation-quantity-unit">
-                        {{ event.get_quantity_unit_display() }}
-                    </div>
-                </div>
-            {% endif %}
-        </div>
-
-        {% if event.value_sampled_data_flag %}
-            <div class="modal fade"
-                 id="modal-{{ event.observation_id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                 aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="staticBackdropLabel">Observation {{ event.observation_id }}</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <canvas id="chart" width="600" height="400"></canvas>
-                            <script>
-                                // bar chart data
-                                var barData = {
-                                    labels: [
-                                        {% for item in labels %}
-                                            "{{ item }}",
-                                        {% endfor %}
-                                    ],
-
-                                    datasets: [{
-                                        fillColor: "rgba(151,187,205,0.2)",
-                                        strokeColor: "rgba(151,187,205,1)",
-                                        pointColor: "rgba(151,187,205,1)",
-                                        data: [
-                                            {% for item in event.value_sampled_data_data %}
-                                                "{{ item }}",
-                                            {% endfor %}
-                                        ]
-                                    }
-                                    ]
-                                }
-
-                                // get bar chart canvas
-                                var mychart = document.getElementById("chart").getContext("2d");
-
-                                steps = 10
-                                max = {{max}}
-
-                                    // draw bar chart
-                                    new Chart(mychart).Bar(barData, {
-                                            scaleOverride: true,
-                                            scaleSteps: steps,
-                                            scaleStepWidth: Math.ceil("{{ event.value_sampled_data_upper_limit }}" / steps),
-                                            scaleStartValue: 0,
-                                            scaleShowVerticalLines: true,
-                                            scaleShowGridLines: true,
-                                            barShowStroke: true,
-                                            scaleShowLabels: true
-                                        }
-                                    );
-
-                            </script>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        </div>
-                    </div>
+                <div class="col">
+                    <button type="submit" class="btn btn-primary mb-2">Filter</button>
                 </div>
             </div>
-        {% endif %}
-    {% endfor %}
+        </form>
+
+        <canvas id="chart-compare" width="1200" height="800"></canvas>
+
+        <script>
+
+            var ctx = document.getElementById("chart-compare").getContext("2d");
+
+            var chart = new Chart(ctx, {
+                type: "line",
+                options: {
+                    legend: {
+                        display: false,
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                fontSize: 20
+                            }
+                        }],
+                        xAxes: [{
+                            display: true,
+                            ticks: {
+                                fontSize: 20
+                            }
+                        }]
+                    },
+                    elements: {
+                        point: {
+                            radius: 5
+                        }
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function (tooltipItem) {
+                                return tooltipItem.yLabel + " {{ observation.get_quantity_unit_display() }}"
+                            }
+                        },
+                        backgroundColor: '#FFF',
+                        titleFontSize: 20,
+                        titleFontColor: '#0066ff',
+                        bodyFontColor: '#000',
+                        bodyFontSize: 18,
+                        borderColor: "#0066ff",
+                        displayColors: false,
+                        titleAlign: 'center',
+                        bodyAlign: 'center'
+                    }
+                },
+                data: {
+                    labels: [{% for item in observation_compare %}"{{ item.get_observation_date_display().__str__() }}", {% endfor %}],
+                    datasets: [{
+                        fontSize: 30,
+                        borderColor: "blue",
+                        fill: true,
+                        data: [{% for item in observation_compare %}{{ item.get_quantity_value_float() }}, {% endfor %}]
+                    }]
+                }
+            })
+
+        </script>
+
+
+    {% endif %}
+
 
 {% endblock %}

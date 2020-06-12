@@ -1,6 +1,7 @@
 import requests
 from dateutil import parser
 import datetime
+import numpy as np
 
 
 class FhirRequest:
@@ -55,14 +56,18 @@ class FhirRequest:
         url = f"http://hapi.fhir.org/baseR4/Observation/{observation_id}?_format=json&_pretty=true"
         r = requests.get(url).json()
         new_observation = Observation()
-        if new_observation.upload(r):
+        if new_observation .upload(r):
             return new_observation
         else:
             return None
         pass
 
-    def get_observation_by_patient(self, patient_id):
-        url = f"http://hapi.fhir.org/baseR4/Observation?patient={patient_id}&_format=json&_pretty=true&_count=200"
+    def get_observation_by_patient(self, patient_id, filters=None):
+        url = f"http://hapi.fhir.org/baseR4/Observation?patient={patient_id}&_format=json&_pretty=true&_count=200&_sort=-date"
+        if isinstance(filters, dict):
+            for key in filters:
+                for value in filters[key]:
+                    url += f"&{key}={value}"
         r = requests.get(url).json()
         self.observation_list = []
         if "entry" not in r:
@@ -98,6 +103,7 @@ class Observation:
         self.status = status
         self.category_display = category_display
         self.code_display = code_display
+        self.code = None
         self.observation_date = observation_date
         self.observation_period = observation_period
         self.last_updated = last_updated
@@ -113,9 +119,17 @@ class Observation:
         self.value_sampled_data_data = None
 
     def upload(self, observation_dic):
+
+        def check_int(str_dig):
+            try:
+                int(str_dig)
+                return True
+            except:
+                return False
         try:
-            self.full_url = observation_dic["fullUrl"]
-            observation_dic = observation_dic["resource"]
+            self.full_url = observation_dic["fullUrl"] if "fullUrl" in observation_dic else None
+            if "resource" in observation_dic:
+                observation_dic = observation_dic["resource"]
             self.subject_id = observation_dic["subject"]["reference"]
             self.observation_id = observation_dic['id']
             self.status = observation_dic["status"]
@@ -125,13 +139,25 @@ class Observation:
             if "code" in observation_dic:
                 if "text" in observation_dic["code"]:
                     self.code_display = [observation_dic["code"]["text"]]
+                    tmp_ = []
+                    for x in range(len(observation_dic["code"]["coding"])):
+                        if "code" in observation_dic["code"]["coding"][x]:
+                            tmp_.append(observation_dic["code"]["coding"][x]["code"])
+                    self.code = tmp_
                 else:
                     tmp = []
+                    tmp_ = []
                     for x in range(len(observation_dic["code"]["coding"])):
+                        found = False
                         if "display" in observation_dic["code"]["coding"][x]:
+
                             tmp.append(observation_dic["code"]["coding"][x]["display"])
-                        elif "code" in observation_dic["code"]["coding"][x]:
-                            tmp.append(observation_dic["code"]["coding"][x]["code"])
+                            found = True
+                        if "code" in observation_dic["code"]["coding"][x]:
+                            if not found:
+                                tmp.append(observation_dic["code"]["coding"][x]["code"])
+                            tmp_.append(observation_dic["code"]["coding"][x]["code"])
+                    self.code = tmp_
                     self.code_display = tmp
             self.observation_date = parser.parse(observation_dic['effectiveDateTime']).replace(tzinfo=None) \
                 if 'effectiveDateTime' in observation_dic else None
@@ -145,22 +171,34 @@ class Observation:
                 self.value_sampled_data_factor = observation_dic["valueSampledData"]["factor"]
                 self.value_sampled_data_lower_limit = observation_dic["valueSampledData"]["lowerLimit"]
                 self.value_sampled_data_upper_limit = observation_dic["valueSampledData"]["upperLimit"]
-                self.value_sampled_data_data = observation_dic["valueSampledData"]["data"]
+                self.value_sampled_data_data = list(map(int,
+                                                        filter(lambda x: check_int(x),
+                                                               observation_dic["valueSampledData"]["data"].split(","))))
             if "valueQuantity" in observation_dic:
                 self.value_quantity_value = observation_dic["valueQuantity"]["value"]
                 self.value_quantity_unit = observation_dic["valueQuantity"]["unit"]
             if "valueCodeableConcept" in observation_dic:
-                self.value_concept = observation_dic["valueCodeableConcept"]["display"]
+                if "text" in observation_dic["valueCodeableConcept"]:
+                    self.value_concept = observation_dic["valueCodeableConcept"]["text"]
+                elif "display" in observation_dic["valueCodeableConcept"]:
+                    self.value_concept = observation_dic["valueCodeableConcept"]["display"]
             return True
         except Exception as exp:
-            # print(exp, observation_dic)
+            print(exp, observation_dic)
             return False
+
+    def get_subject_id(self):
+        return "/".join(self.subject_id.split("/")[1:]) if self.subject_id else ""
 
     def get_category_display(self):
         return ", ".join(self.category_display) if self.category_display else "Observation"
 
     def get_code_display(self):
-        return ", ".join(self.code_display) if self.code_display else "No description"
+        return (", ".join(self.code_display) if self.code_display else None) or self.value_concept or\
+               ("Sampled data" if self.value_sampled_data_flag else None) or "No description"
+
+    def get_code(self):
+        return ",".join(self.code)
 
     def get_observation_date_display(self):
         return self.observation_date.date() if self.observation_date else "--.--.--"
@@ -176,6 +214,12 @@ class Observation:
         else:
             return "No value"
 
+    def get_quantity_value_float(self, precision=2):
+        try:
+            return round(self.get_quantity_value_display(), precision)
+        except:
+            return 0
+
     def get_quantity_unit_display(self):
         if self.value_quantity_unit:
             return self.value_quantity_unit
@@ -184,6 +228,22 @@ class Observation:
 
     def get_event_date(self):
         return self.observation_date if self.observation_date else None
+
+    def get_value_sampled_data(self):
+        return np.array(self.value_sampled_data_data)
+
+    def check_quantity_value_isnumeric(self):
+        try:
+            int(self.get_quantity_value_display())
+            return True
+        except:
+            return False
+
+    def check_date_is_between(self, lower_bound, upper_bound):
+        if self.get_event_date() and isinstance(self.get_event_date(), datetime.datetime):
+            if lower_bound <= self.get_event_date() <= upper_bound:
+                return True
+        return False
 
 
 class Patient:
@@ -376,6 +436,12 @@ class MedicationStatement:
             return self.dosage_timing_period_unit
         else:
             return ""
+
+    def check_date_is_between(self, lower_bound, upper_bound):
+        if self.get_event_date() and isinstance(self.get_event_date(), datetime.datetime):
+            if lower_bound <= self.get_event_date() <= upper_bound:
+                return True
+        return False
 
 
 def main():
