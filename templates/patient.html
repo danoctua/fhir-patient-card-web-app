@@ -2,8 +2,8 @@
 
 {% block header %}
 
-    <a class="btn-back" href="{{ back_url }}">back to the list</a>
-    {{ patient.get_first_names_display() }} {{ patient.last_name }}
+    <a class="btn-back" href="{{ back_url }}"></a>
+    <a class="header-text-with-button">{{ patient.get_first_names_display() }} {{ patient.last_name }}</a>
 
 {% endblock %}
 
@@ -132,7 +132,7 @@
                         </div>
                     </div>
                     <div class="observation-more">
-                        <a href="{{ url_for("observation_page", observation_id=event.observation_id) }}">More</a>
+                        <a href="{{ url_for("observation_page", observation_id=event.observation_id) }}"></a>
                     </div>
                 {% elif event.resource == "medication_statements" %}
                     <div class="medicament-icon"></div>

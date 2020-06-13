@@ -2,9 +2,9 @@
 
 {% block header %}
     {% if back_url %}
-        <a class="btn-back" href="{{ back_url }}">back to the patient</a>
+        <a class="btn-back" href="{{ back_url }}"></a>
     {% endif %}
-    {{ observation.get_category_display() or "Observation" }} {{ observation.observation_id }}
+    <a class="header-text-with-button">{{ observation.get_category_display() or "Observation" }} {{ observation.observation_id }}</a>
 
 {% endblock %}
 

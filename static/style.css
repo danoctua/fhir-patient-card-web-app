@@ -31,6 +31,7 @@ html {
     font-weight: 600 !important;
     color: #646464;
     font-size: 40px;
+    display: flex;
 }
 
 @media only screen and (min-width: 991px) {
@@ -203,11 +204,30 @@ table {
 
 .observation-more {
     flex: none;
-    width: 60px;
+    width: 80px;
+}
+
+.observation-more a {
+    display: block;
+    width: 80px;
+    height: 80px;
+    padding: 20px;
+    background-image: url("/static/more.png");
+    background-origin: content-box;
+    background-size: cover;
+    background-repeat: no-repeat;
+    text-decoration: none;
+    transition: .15s;
+    border-radius: 20px;
+}
+
+.observation-more a:hover, .btn-back:hover {
+    opacity: .6;
+    background-color: #97aed5;
 }
 
 .form-row {
-    margin: 10px 0!important;
+    margin: 10px 0 !important;
 }
 
 th form {
@@ -217,3 +237,22 @@ th form {
 .row-updated {
     background-color: #cfffcf;
 }
+
+.btn-back {
+    display: inline-block;
+    width: 70px;
+    height: 70px;
+    padding: 10px;
+    background-image: url("/static/back.png");
+    background-origin: content-box;
+    background-size: cover;
+    background-repeat: no-repeat;
+    text-decoration: none;
+    transition: .15s;
+    border-radius: 20px;
+}
+
+.header-text-with-button {
+    padding: 10px;
+}
+
