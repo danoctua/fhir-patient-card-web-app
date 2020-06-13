@@ -1,6 +1,5 @@
 from flask import Flask, render_template, url_for, request, redirect, session
-from fhir_test import *
-import numpy as np
+from tools import *
 
 app = Flask(__name__)
 
