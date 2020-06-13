@@ -210,3 +210,10 @@ table {
     margin: 10px 0!important;
 }
 
+th form {
+    display: flex;
+}
+
+.row-updated {
+    background-color: #cfffcf;
+}

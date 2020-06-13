@@ -13,33 +13,78 @@
 
     <table class="table table-hover">
         <tbody>
-        <tr>
+        <tr {% if patient.patient_id != prev_patient.patient_id %}class="row-updated"{% endif %}>
             <th>ID</th>
             <th>{{ patient.patient_id }}</th>
         </tr>
-        <tr>
+        <tr {% if patient.last_name != prev_patient.last_name %}class="row-updated"{% endif %}>
             <th>Last name</th>
             <th>{{ patient.last_name }}</th>
         </tr>
-        <tr>
+        <tr {% if patient.get_first_names_display() != prev_patient.get_first_names_display() %}class="row-updated"{% endif %}>
             <th>First name</th>
             <th>{{ patient.get_first_names_display() }}</th>
         </tr>
-        <tr>
+        <tr {% if patient.get_gender_display() != prev_patient.get_gender_display() %}class="row-updated"{% endif %}>
             <th>Gender</th>
             <th>{{ patient.get_gender_display() }}</th>
         </tr>
-        <tr>
+        <tr {% if patient.get_birth_date_display() != prev_patient.get_birth_date_display() %}class="row-updated"{% endif %}>
             <th>Birth date</th>
             <th>{{ patient.get_birth_date_display() }}</th>
         </tr>
-        <tr>
+        <tr {% if patient.get_address_display() != prev_patient.get_address_display() %}class="row-updated"{% endif %}>
             <th>Address</th>
-            <th>{{ patient.get_address_display() }}</th>
+            <th>
+                <form method="post" action="{{ current_url }}">
+                    <input class="form-control" name="address_text" value="{{ patient.get_address_display() }}">
+                    <button class="btn btn-primary" type="submit">Update</button>
+                </form>
+            </th>
         </tr>
-        <tr>
+        <tr {% if patient.get_address_city() != prev_patient.get_address_city() %}class="row-updated"{% endif %}>
+            <th>Address city</th>
+            <th>
+                <form method="post" action="{{ current_url }}">
+                    <input class="form-control" name="address_city" value="{{ patient.get_address_city() }}">
+                    <button class="btn btn-primary" type="submit">Update</button>
+                </form>
+            </th>
+        </tr>
+        <tr {% if patient.get_address_state() != prev_patient.get_address_state() %}class="row-updated"{% endif %}>
+            <th>Address state</th>
+            <th>
+                <form method="post" action="{{ current_url }}">
+                    <input class="form-control" name="address_state" value="{{ patient.get_address_state() }}">
+                    <button class="btn btn-primary" type="submit">Update</button>
+                </form>
+            </th>
+        </tr>
+        <tr {% if patient.get_contact_display() != prev_patient.get_contact_display() %}class="row-updated"{% endif %}>
             <th>Contact</th>
             <th>{{ patient.get_contact_display() }}</th>
+        </tr>
+        <tr {% if patient.get_identifiers_display() != prev_patient.get_identifiers_display() %}class="row-updated"{% endif %}>
+            <th>Identifiers</th>
+            <th>{{ patient.get_identifiers_display()|safe }}</th>
+        </tr>
+        <tr>
+            <th>Version</th>
+            <th>
+                {% if patient.version_id %}
+                    <select class="form-control select-version">
+                        {% for version_ in range(1, max_version) %}
+                        <option {% if version_ == patient.version_id %}selected{% endif %}>{{ version_ }}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </th>
+        </tr>
+        <tr>
+            <th>Last updated</th>
+            <th>
+                {{ patient.get_last_updated() }}
+            </th>
         </tr>
         </tbody>
     </table>
@@ -49,67 +94,67 @@
 
     {% if events %}
 
-    <form action="{{ current_url }}">
+        <form action="{{ current_url }}">
 
-        <div class="form-row">
-            <div class="col">
-                <label for="date-from">From</label>
-                <input type="date" id="date-from" class="form-control" name="from" value="{{ lower_date }}">
+            <div class="form-row">
+                <div class="col">
+                    <label for="date-from">From</label>
+                    <input type="date" id="date-from" class="form-control" name="from" value="{{ lower_date }}">
+                </div>
+                <div class="col">
+                    <label for="date-to">To</label>
+                    <input type="date" id="date-to" class="form-control" name="to" value="{{ upper_date }}">
+                </div>
+                <div class="col">
+                    <button type="submit" class="btn btn-primary mb-2">Filter</button>
+                </div>
             </div>
-            <div class="col">
-                <label for="date-to">To</label>
-                <input type="date" id="date-to" class="form-control" name="to" value="{{ upper_date }}">
-            </div>
-            <div class="col">
-                <button type="submit" class="btn btn-primary mb-2">Filter</button>
-            </div>
-        </div>
-    </form>
+        </form>
 
-    {% for event in events %}
-        <div class="observation">
-            {% if event.resource == "observation" %}
-                <div class="observation-icon"></div>
-                <div class="observation-datetime">
-                    <div class="observation-time">{{ event.get_observation_time_display() }}</div>
-                    <div class="observation-date">{{ event.get_observation_date_display() }}</div>
-                </div>
-                <div class="observation-description">
-                    <div class="observation-code">{{ event.get_code_display() }} </div>
-                    <div class="observation-category">{{ event.get_category_display() }}</div>
-                </div>
-                <div class="observation-quantity">
-                    <div class="observation-quantity-value">
-                        {{ event.get_quantity_value_display() }}
+        {% for event in events %}
+            <div class="observation">
+                {% if event.resource == "observation" %}
+                    <div class="observation-icon"></div>
+                    <div class="observation-datetime">
+                        <div class="observation-time">{{ event.get_observation_time_display() }}</div>
+                        <div class="observation-date">{{ event.get_observation_date_display() }}</div>
                     </div>
-                    <div class="observation-quantity-unit">
-                        {{ event.get_quantity_unit_display() }}
+                    <div class="observation-description">
+                        <div class="observation-code">{{ event.get_code_display() }} </div>
+                        <div class="observation-category">{{ event.get_category_display() }}</div>
                     </div>
-                </div>
-                <div class="observation-more">
-                    <a href="{{ url_for("observation_page", observation_id=event.observation_id) }}">More</a>
-                </div>
-            {% elif event.resource == "medication_statements" %}
-                <div class="medicament-icon"></div>
-                <div class="observation-datetime">
-                    <div class="observation-time">{{ event.get_event_time_display() }}</div>
-                    <div class="observation-date">{{ event.get_event_date_display() }}</div>
-                </div>
-                <div class="observation-description">
-                    <div class="observation-code">{{ event.get_code_display() }} </div>
-                    <div class="observation-category">{{ event.get_category_display() }}</div>
-                </div>
-                <div class="observation-quantity">
-                    <div class="observation-quantity-value {{ "observatio-quantity-value-digit" if event.get_quantity_value_display().isnumeric() else "" }}">
-                        {{ event.get_quantity_value_display()|safe }}
+                    <div class="observation-quantity">
+                        <div class="observation-quantity-value">
+                            {{ event.get_quantity_value_display() }}
+                        </div>
+                        <div class="observation-quantity-unit">
+                            {{ event.get_quantity_unit_display() }}
+                        </div>
                     </div>
-                    <div class="observation-quantity-unit">
-                        {{ event.get_quantity_unit_display() }}
+                    <div class="observation-more">
+                        <a href="{{ url_for("observation_page", observation_id=event.observation_id) }}">More</a>
                     </div>
-                </div>
-            {% endif %}
-        </div>
-    {% endfor %}
+                {% elif event.resource == "medication_statements" %}
+                    <div class="medicament-icon"></div>
+                    <div class="observation-datetime">
+                        <div class="observation-time">{{ event.get_event_time_display() }}</div>
+                        <div class="observation-date">{{ event.get_event_date_display() }}</div>
+                    </div>
+                    <div class="observation-description">
+                        <div class="observation-code">{{ event.get_code_display() }} </div>
+                        <div class="observation-category">{{ event.get_category_display() }}</div>
+                    </div>
+                    <div class="observation-quantity">
+                        <div class="observation-quantity-value {{ "observatio-quantity-value-digit" if event.get_quantity_value_display().isnumeric() else "" }}">
+                            {{ event.get_quantity_value_display()|safe }}
+                        </div>
+                        <div class="observation-quantity-unit">
+                            {{ event.get_quantity_unit_display() }}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
 
     {% else %}
         <div class="no-data">This patient has no events</div>

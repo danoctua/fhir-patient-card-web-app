@@ -14,57 +14,85 @@
 
     <table class="table table-hover">
         <tbody>
-        <tr>
+        <tr {% if observation.observation_id != prev_observation.observation_id %}class="row-updated"{% endif %}>
             <th>ID</th>
             <th>{{ observation.observation_id }}</th>
         </tr>
-        <tr>
+        <tr {% if observation.subject_id != prev_observation.subject_id %}class="row-updated"{% endif %}>
             <th>Patient ID</th>
             <th>{{ observation.subject_id }}</th>
         </tr>
-        <tr>
+        <tr {% if observation.status != prev_observation.status %}class="row-updated"{% endif %}>
             <th>Status</th>
             <th>{{ observation.status }}</th>
         </tr>
-        <tr>
+        <tr {% if observation.get_category_display() != prev_observation.get_category_display() %}class="row-updated"{% endif %}>
             <th>Observation category</th>
             <th>{{ observation.get_category_display() }}</th>
         </tr>
-        <tr>
-            <th>Observation code</th>
+        <tr {% if observation.get_code_display() != prev_observation.get_code_display() %}class="row-updated"{% endif %}>
+            <th>Observation type</th>
             <th>{{ observation.get_code_display() }}</th>
         </tr>
-        <tr>
+        <tr {% if observation.get_observation_date_display() != prev_observation.get_observation_date_display() %}class="row-updated"{% endif %}>
             <th>Observation date</th>
-            <th>{{ observation.get_observation_date_display() }}</th>
+            <th>
+                <form method="post" action="{{ current_url }}">
+                    <input class="form-control" name="observation_date" type="date"
+                           value="{{ observation.get_observation_date_display() }}">
+                    <button class="btn btn-primary" type="submit">Update</button>
+                </form>
+            </th>
         </tr>
-        <tr>
+        <tr {% if observation.get_observation_time_display() != prev_observation.get_observation_time_display() %}class="row-updated"{% endif %}>
             <th>Observation time</th>
-            <th>{{ observation.get_observation_time_display() }}</th>
+            <th><form method="post" action="{{ current_url }}">
+                    <input class="form-control" name="observation_time" type="time"
+                           value="{{ observation.get_observation_time_display() }}">
+                    <button class="btn btn-primary" type="submit">Update</button>
+                </form></th>
         </tr>
         {% if not observation.value_sampled_data_flag %}
-            <tr>
+            <tr {% if observation.get_quantity_value_display() != prev_observation.get_quantity_value_display() %}class="row-updated"{% endif %}>
                 <th>Results</th>
                 <th>{{ observation.get_quantity_value_display() }} {{ observation.get_quantity_unit_display() }}</th>
             </tr>
         {% else %}
-            <tr>
+            <tr {% if observation.value_sampled_data_period != prev_observation.value_sampled_data_period %}class="row-updated"{% endif %}>
                 <th>Sampled data period</th>
                 <th>{{ observation.value_sampled_data_period }}</th>
             </tr>
-            <tr>
+            <tr {% if observation.value_sampled_data_factor != prev_observation.value_sampled_data_factor %}class="row-updated"{% endif %}>
                 <th>Sampled data factor</th>
                 <th>{{ observation.value_sampled_data_factor }}</th>
             </tr>
-            <tr>
+            <tr {% if observation.value_sampled_data_lower_limit != prev_observation.value_sampled_data_lower_limit %}class="row-updated"{% endif %}>
                 <th>Sampled data lower limit</th>
                 <th>{{ observation.value_sampled_data_lower_limit }}</th>
             </tr>
-            <tr>
+            <tr {% if observation.value_sampled_data_upper_limit != prev_observation.value_sampled_data_upper_limit %}class="row-updated"{% endif %}>
                 <th>Sampled data upper limit</th>
                 <th>{{ observation.value_sampled_data_upper_limit }}</th>
             </tr>
         {% endif %}
+        <tr>
+            <th>Version</th>
+            <th>
+                {% if observation.version_id %}
+                    <select class="form-control select-version">
+                        {% for version_ in range(1, max_version) %}
+                            <option {% if version_ == observation.version_id %}selected{% endif %}>{{ version_ }}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </th>
+        </tr>
+        <tr>
+            <th>Last updated</th>
+            <th>
+                {{ observation.get_last_updated() }}
+            </th>
+        </tr>
 
         </tbody>
     </table>
@@ -110,6 +138,7 @@
     {% endif %}
 
     {% if observation_compare %}
+
 
         <div class="section-header">Data dynamics in time:</div>
 

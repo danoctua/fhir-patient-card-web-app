@@ -7,6 +7,8 @@ app = Flask(__name__)
 app.secret_key = 'FHIR will destroy you'
 app.config['SESSION_TYPE'] = 'filesystem'
 
+fhir_req = FhirRequest()
+
 
 @app.route("/")
 def main_page():
@@ -14,7 +16,10 @@ def main_page():
 
 
 @app.route("/patients")
-def patients_page():
+@app.route("/patients/<int:page_num>")
+def patients_page(page_num=1):
+    if page_num > fhir_req.current_page + 1:
+        return redirect(url_for("patients_page", page_num=fhir_req.current_page+1))
     session["BACK_URL_PATIENT"] = request.url
     given, family = None, None
 
@@ -40,10 +45,17 @@ def patients_page():
         given = req_val["given"]
     if "family" in req_val and req_val['family'] != "":
         family = req_val["family"]
-    fhir_req = FhirRequest()
-    patients = fhir_req.get_patients(first_name=given, last_name=family)
+    patients = fhir_req.get_patients(first_name=given, last_name=family, page_num=page_num)
     return render_template("patients.html", patients=patients, given=given, family=family,
-                           current_url=request.url)
+                           current_url=request.url, page_num=page_num)
+
+
+@app.route("/patient/<patient_id>", methods=["POST"])
+def patient_page_post(patient_id: str):
+    req_val = request.values.to_dict()
+    res = fhir_req.update_patient_data(patient_id, req_val)
+    session["notification"] = res
+    return redirect(url_for("patient_page", patient_id=patient_id))
 
 
 @app.route("/patient/<patient_id>")
@@ -51,16 +63,23 @@ def patient_page(patient_id: str):
     back_url = session["BACK_URL_PATIENT"] if "BACK_URL_PATIENT" in session else None
     if not back_url:
         back_url = url_for("patients_page")
+    notification = session["notification"] if "notification" in session else None
+    session["notification"] = None
     session["BACK_URL_OBSERVATION"] = request.url
-    fhir_req = FhirRequest()
-    patient = fhir_req.read_patient_data(patient_id)
+    r_val = request.values.to_dict()
+    version = int(r_val["version"]) if 'version' in r_val else None
+    patient = fhir_req.read_patient_data(patient_id, version=version)
     if not patient:
         return redirect(url_for("patients_page"))
+    if patient.version_id > 1:
+        prev_patient = fhir_req.read_patient_data(patient_id, version=max(patient.version_id - 1, 1))
+    else:
+        prev_patient = patient
+    max_version = fhir_req.total + 1 if fhir_req.total else patient.version_id + 1
     lower_date = datetime.datetime(1900, 1, 1, 1, 1).strftime("%Y-%m-%d")
     lower_date_datetime = datetime.datetime.strptime(lower_date, "%Y-%m-%d")
     upper_date = datetime.datetime.now().strftime("%Y-%m-%d")
     upper_date_datetime = datetime.datetime.strptime(upper_date, "%Y-%m-%d")
-    r_val = request.values.to_dict()
     if "from" in r_val:
         lower_date = r_val["from"]
         lower_date_datetime = datetime.datetime.strptime(lower_date, "%Y-%m-%d")
@@ -75,15 +94,34 @@ def patient_page(patient_id: str):
     events = list(sorted(events, key=lambda x: x.get_event_date() or datetime.datetime.min, reverse=True))
     return render_template("patient.html", patient=patient, observations=observations,
                            m_statements=m_statements, events=events, back_url=back_url,
-                           upper_date=upper_date, lower_date=lower_date)
+                           upper_date=upper_date, lower_date=lower_date, current_url=request.path,
+                           notification=notification, version=version, max_version=max_version,
+                           prev_patient=prev_patient)
+
+
+@app.route("/observation/<observation_id>", methods=["POST"])
+def observation_page_post(observation_id: str):
+    req_val = request.values.to_dict()
+    res = fhir_req.update_observation_data(observation_id, req_val)
+    session["notification"] = res
+    return redirect(url_for("observation_page", observation_id=observation_id))
 
 
 @app.route("/observation/<observation_id>")
 def observation_page(observation_id: str):
-
     back_url = session["BACK_URL_OBSERVATION"] if "BACK_URL_OBSERVATION" in session else None
-    fhir_req = FhirRequest()
-    observation = fhir_req.read_observation_data(observation_id)
+    notification = session["notification"] if "notification" in session else None
+    session["notification"] = None
+    r_val = request.values.to_dict()
+    version = int(r_val["version"]) if 'version' in r_val else None
+    observation = fhir_req.read_observation_data(observation_id, version=version)
+    if not observation:
+        return redirect(back_url)
+    if observation.version_id > 1:
+        prev_observation = fhir_req.read_observation_data(observation_id, version=max(observation.version_id - 1, 1))
+    else:
+        prev_observation = observation
+    max_version = fhir_req.total + 1 if fhir_req.total else observation.version_id + 1
     observation_compare = {}
     lower_date = datetime.datetime(1900, 1, 1, 1, 1).strftime("%Y-%m-%d")
     lower_date_datetime = datetime.datetime.strptime(lower_date, "%Y-%m-%d")
@@ -103,7 +141,8 @@ def observation_page(observation_id: str):
         observation_compare = filter_objects_valid(list(reversed(tmp)))
     return render_template("observation.html", observation=observation, back_url=back_url,
                            get_labels=get_labels, observation_compare=observation_compare,
-                           lower_date=lower_date, upper_date=upper_date)
+                           lower_date=lower_date, upper_date=upper_date, notification=notification,
+                           max_version=max_version, prev_observation=prev_observation)
 
 
 def filter_objects_valid(ls_objects):
