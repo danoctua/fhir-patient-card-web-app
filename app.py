@@ -69,10 +69,13 @@ def patient_page(patient_id: str):
     version = int(r_val["version"]) if 'version' in r_val else None
     patient = fhir_req.read_patient_data(patient_id, version=version)
     if not patient:
+        session["notification"] = ["danger", "No such a patient in database"]
         return redirect(url_for("patients_page"))
     if patient.version_id > 1:
         prev_patient = fhir_req.read_patient_data(patient_id, version=max(patient.version_id - 1, 1))
     else:
+        prev_patient = patient
+    if not prev_patient:
         prev_patient = patient
     max_version = fhir_req.total + 1 if fhir_req.total else patient.version_id + 1
     lower_date = datetime.datetime(1900, 1, 1, 1, 1).strftime("%Y-%m-%d")
@@ -88,7 +91,7 @@ def patient_page(patient_id: str):
     observations = fhir_req.get_observation_by_patient(patient_id)
     observations = list(filter(lambda x: x.check_date_is_between(lower_date_datetime, upper_date_datetime), observations))
     m_statements = fhir_req.get_medication_statements_by_patient(patient_id)
-    m_statements = list(filter(lambda x: x.check_date_is_between(lower_date_datetime, upper_date_datetime), m_statements))
+    # m_statements = list(filter(lambda x: x.check_date_is_between(lower_date_datetime, upper_date_datetime), m_statements))
     events = observations + m_statements
     events = list(sorted(events, key=lambda x: x.get_event_date() or datetime.datetime.min, reverse=True))
     return render_template("patient.html", patient=patient, observations=observations,

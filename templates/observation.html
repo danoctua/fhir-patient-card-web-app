@@ -24,7 +24,14 @@
         </tr>
         <tr {% if observation.status != prev_observation.status %}class="row-updated"{% endif %}>
             <th>Status</th>
-            <th>{{ observation.status }}</th>
+            <th>
+                <form method="post" action="{{ current_url }}">
+                    <input class="form-control" name="observation_status" type="text"
+                           value="{{ observation.status }}">
+                    <button class="btn btn-primary" type="submit">Update</button>
+                </form>
+            </th>
+{#            <th>{{ observation.status }}</th>#}
         </tr>
         <tr {% if observation.get_category_display() != prev_observation.get_category_display() %}class="row-updated"{% endif %}>
             <th>Observation category</th>

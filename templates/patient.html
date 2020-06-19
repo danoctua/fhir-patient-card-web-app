@@ -19,11 +19,23 @@
         </tr>
         <tr {% if patient.last_name != prev_patient.last_name %}class="row-updated"{% endif %}>
             <th>Last name</th>
-            <th>{{ patient.last_name }}</th>
+            <th>
+                <form method="post" action="{{ current_url }}">
+                    <input class="form-control" name="last_name" value="{{ patient.last_name }}">
+                    <button class="btn btn-primary" type="submit">Update</button>
+                </form>
+            </th>
+{#            <th>{{ patient.last_name }}</th>#}
         </tr>
         <tr {% if patient.get_first_names_display() != prev_patient.get_first_names_display() %}class="row-updated"{% endif %}>
             <th>First name</th>
-            <th>{{ patient.get_first_names_display() }}</th>
+            <th>
+                <form method="post" action="{{ current_url }}">
+                    <input class="form-control" name="first_name" value="{{ patient.get_first_names_display() }}">
+                    <button class="btn btn-primary" type="submit">Update</button>
+                </form>
+            </th>
+            {#            <th>{{ patient.get_first_names_display() }}</th>#}
         </tr>
         <tr {% if patient.get_gender_display() != prev_patient.get_gender_display() %}class="row-updated"{% endif %}>
             <th>Gender</th>
@@ -74,7 +86,7 @@
                 {% if patient.version_id %}
                     <select class="form-control select-version">
                         {% for version_ in range(1, max_version) %}
-                        <option {% if version_ == patient.version_id %}selected{% endif %}>{{ version_ }}</option>
+                            <option {% if version_ == patient.version_id %}selected{% endif %}>{{ version_ }}</option>
                         {% endfor %}
                     </select>
                 {% endif %}
