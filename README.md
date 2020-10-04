@@ -1,4 +1,4 @@
-# PatientCard
+# FHIR Patient Card
 
 List of files:
 
